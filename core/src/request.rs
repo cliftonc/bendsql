@@ -28,6 +28,8 @@ pub struct QueryRequest<'a> {
     stage_attachment: Option<StageAttachmentConfig<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     params: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    arrow_result_version_max: Option<i64>,
 }
 
 #[derive(Serialize, Debug)]
@@ -57,6 +59,7 @@ impl<'r, 't: 'r> QueryRequest<'r> {
             pagination: None,
             stage_attachment: None,
             params: None,
+            arrow_result_version_max: None,
         }
     }
 
@@ -80,6 +83,11 @@ impl<'r, 't: 'r> QueryRequest<'r> {
 
     pub fn with_params(mut self, params: Option<serde_json::Value>) -> Self {
         self.params = params;
+        self
+    }
+
+    pub fn with_arrow(mut self) -> Self {
+        self.arrow_result_version_max = Some(2);
         self
     }
 }
@@ -123,6 +131,18 @@ mod test {
         // params=None should not appear in serialized output
         let req = QueryRequest::new("SELECT 1").with_params(None);
         assert_eq!(serde_json::to_string(&req)?, r#"{"sql":"SELECT 1"}"#);
+        Ok(())
+    }
+
+    #[test]
+    fn build_request_with_params_and_arrow() -> Result<()> {
+        let req = QueryRequest::new("SELECT ?")
+            .with_params(Some(serde_json::json!([1])))
+            .with_arrow();
+        assert_eq!(
+            serde_json::to_string(&req)?,
+            r#"{"sql":"SELECT ?","params":[1],"arrow_result_version_max":2}"#
+        );
         Ok(())
     }
 }

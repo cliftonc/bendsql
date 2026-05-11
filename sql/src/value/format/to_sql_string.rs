@@ -72,8 +72,8 @@ impl Value {
             }
             Value::Bitmap(b) => serde_json::Value::String(b.clone()),
             Value::Variant(v) => serde_json::Value::String(v.clone()),
-            Value::Geometry(g) => serde_json::Value::String(g.clone()),
-            Value::Geography(g) => serde_json::Value::String(g.clone()),
+            Value::Geometry(g) => serde_json::Value::String(g.to_string().to_string()),
+            Value::Geography(g) => serde_json::Value::String(g.to_string().to_string()),
             Value::Interval(i) => serde_json::Value::String(i.clone()),
             Value::Vector(v) => {
                 serde_json::Value::Array(v.iter().map(|f| serde_json::json!(f)).collect())
